@@ -50,9 +50,10 @@ docker compose up -d postgres
 
 ### 3. Verify the connection
 
-CD into `/packages/database` and then run:
+Run a health check in `/packages/database`:
 
 ```bash
+cd packages/database
 pnpm db:health
 ```
 
