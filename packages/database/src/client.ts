@@ -1,11 +1,20 @@
 import { Pool } from 'pg';
+
 import { drizzle } from 'drizzle-orm/node-postgres';
+
 import * as schema from './schema';
 
-const databaseUrl = process.env.DATABASE_URL;
+const databaseUrl =
+  process.env.NODE_ENV === 'test'
+    ? process.env.TEST_DATABASE_URL
+    : process.env.DATABASE_URL;
 
 if (!databaseUrl) {
-  throw new Error('DATABASE_URL environment variable is not set');
+  throw new Error(
+    process.env.NODE_ENV === 'test'
+      ? 'TEST_DATABASE_URL environment variable is not set'
+      : 'DATABASE_URL environment variable is not set',
+  );
 }
 
 try {
@@ -43,4 +52,4 @@ export const closeDatabase = async () => {
   if (isClosed) return;
   isClosed = true;
   await pool.end();
-}
+};
