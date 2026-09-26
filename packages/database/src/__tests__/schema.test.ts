@@ -1,5 +1,5 @@
 import {
-  users,
+  user,
   modules,
   tutorials,
   labs,
@@ -8,7 +8,7 @@ import {
 
 describe('Database schemas', () => {
   it('should export all expected schemas', () => {
-    expect(users).toBeDefined();
+    expect(user).toBeDefined();
     expect(modules).toBeDefined();
     expect(tutorials).toBeDefined();
     expect(labs).toBeDefined();
@@ -16,12 +16,14 @@ describe('Database schemas', () => {
   });
 
   it('users should have expected fields', () => {
-    expect(users).toHaveProperty('id');
-    expect(users).toHaveProperty('email');
-    expect(users).toHaveProperty('passwordHash');
-    expect(users).toHaveProperty('role');
-    expect(users).toHaveProperty('createdAt');
-    expect(users).toHaveProperty('updatedAt');
+    expect(user).toHaveProperty('id');
+    expect(user).toHaveProperty('name');
+    expect(user).toHaveProperty('email');
+    expect(user).toHaveProperty('emailVerified');
+    expect(user).toHaveProperty('image');
+    expect(user).toHaveProperty('role');
+    expect(user).toHaveProperty('createdAt');
+    expect(user).toHaveProperty('updatedAt');
   });
 
   it('modules should have expected fields', () => {

@@ -42,7 +42,7 @@ jobs:
             node-version: 24
             cache: pnpm 
 
-        - name: Install dependancies
+        - name: Install dependencies
           run: pnpm install --frozen-lockfile
 
         - name: Create migration test database

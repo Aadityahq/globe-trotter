@@ -1,7 +1,7 @@
 import { eq } from 'drizzle-orm';
 import { execSync } from 'node:child_process';
 import { db, closeDatabase } from '../client';
-import { users, modules } from '../schema';
+import { user, modules } from '../schema';
 
 const runMigrations = () => {
   execSync('pnpm exec drizzle-kit migrate', {
@@ -23,62 +23,67 @@ afterAll(async () => {
 });
 
 describe('Database CRUD operations', () => {
-    it('should insert and query a user', async () => {
+  it('should insert and query a user', async () => {
     const email = `test-${Date.now()}@example.com`;
 
-    const [user] = await db
-        .insert(users)
-        .values({
+    const [testUser] = await db
+      .insert(user)
+      .values({
+        id: `test-user-${Date.now()}`,
+        name: 'Test User',
         email,
-        passwordHash: 'test-password-hash',
         role: 'learner',
         createdAt: new Date(),
         updatedAt: new Date(),
-        })
-        .returning();
+      })
+      .returning();
 
-    if (!user) {
-        throw new Error('User was not returned after insert');
+    if (!testUser) {
+      throw new Error('User was not returned after insert');
     }
-    expect(user.email).toBe(email);
-    expect(user.role).toBe('learner');
+
+    expect(testUser.email).toBe(email);
+    expect(testUser.role).toBe('learner');
 
     const result = await db
-        .select()
-        .from(users)
-        .where(eq(users.email, email));
-        
+      .select()
+      .from(user)
+      .where(eq(user.email, email));
+
     expect(result).toHaveLength(1);
 
     const queriedUser = result[0];
-    if (!queriedUser) {
-        throw new Error('User was not found after insert');
-    }
-    expect(queriedUser.email).toBe(email);
-    });
 
-    it('should insert and query a module', async () => {
+    if (!queriedUser) {
+      throw new Error('User was not found after insert');
+    }
+
+    expect(queriedUser.email).toBe(email);
+  });
+
+  it('should insert and query a module', async () => {
     const email = `module-test-${Date.now()}@example.com`;
 
-    const [user] = await db
-        .insert(users)
-        .values({
+    const [author] = await db
+      .insert(user)
+      .values({
+        id: `author-${Date.now()}`,
+        name: 'Test Author',
         email,
-        passwordHash: 'test-password-hash',
         role: 'author',
         createdAt: new Date(),
         updatedAt: new Date(),
-        })
-        .returning();
+      })
+      .returning();
 
-    if (!user) {
-        throw new Error('Author was not returned after insert');
+    if (!author) {
+      throw new Error('Author was not returned after insert');
     }
 
     const [module] = await db
-        .insert(modules)
-        .values({
-        authorId: user.id,
+      .insert(modules)
+      .values({
+        authorId: author.id,
         title: 'Test Module',
         description: 'Test module description',
         orderIndex: 1,
@@ -86,30 +91,30 @@ describe('Database CRUD operations', () => {
         isPublished: false,
         createdAt: new Date(),
         updatedAt: new Date(),
-        })
-        .returning();
+      })
+      .returning();
 
     if (!module) {
-        throw new Error('Module was not returned after insert');
+      throw new Error('Module was not returned after insert');
     }
 
     expect(module.title).toBe('Test Module');
-    expect(module.authorId).toBe(user.id);
+    expect(module.authorId).toBe(author.id);
 
     const result = await db
-        .select()
-        .from(modules)
-        .where(eq(modules.id, module.id));
+      .select()
+      .from(modules)
+      .where(eq(modules.id, module.id));
 
     expect(result).toHaveLength(1);
 
     const queriedModule = result[0];
 
     if (!queriedModule) {
-        throw new Error('Module was not found after insert');
+      throw new Error('Module was not found after insert');
     }
 
     expect(queriedModule.title).toBe('Test Module');
-    expect(queriedModule.authorId).toBe(user.id);
-    });
+    expect(queriedModule.authorId).toBe(author.id);
+  });
 });

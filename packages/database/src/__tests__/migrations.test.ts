@@ -42,7 +42,10 @@ it('should apply all database migrations', async () => {
 
   expect(tableNames).toEqual(
     expect.arrayContaining([
-      'users',
+      'user',
+      'session',
+      'account',
+      'verification',
       'modules',
       'tutorials',
       'labs',
