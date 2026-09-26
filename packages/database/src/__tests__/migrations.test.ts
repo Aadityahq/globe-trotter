@@ -7,18 +7,27 @@ const runMigrations = () => {
     stdio: 'inherit',
     env: {
       ...process.env,
-      DATABASE_URL: process.env.TEST_DATABASE_URL,
+      DATABASE_URL: process.env.MIGRATION_TEST_DATABASE_URL,
     },
   });
 };
 
 const client = new Client({
-  connectionString: process.env.TEST_DATABASE_URL,
+  connectionString: process.env.MIGRATION_TEST_DATABASE_URL,
 });
 
 beforeAll(async () => {
   runMigrations();
-  await client.connect();
+
+  try {
+    await client.connect();
+  } catch (error) {
+    throw new Error(
+      `Failed to connect to the test database: ${
+        error instanceof Error ? error.message : String(error)
+      }`,
+    );
+  }
 });
 
 it('should apply all database migrations', async () => {
@@ -43,10 +52,12 @@ it('should apply all database migrations', async () => {
 });
 
 afterAll(async () => {
-  const testDatabaseUrl = process.env.TEST_DATABASE_URL;
+  const testDatabaseUrl = process.env.MIGRATION_TEST_DATABASE_URL;
 
   if (!testDatabaseUrl) {
-    throw new Error('TEST_DATABASE_URL is required for database tests');
+    throw new Error(
+      'MIGRATION_TEST_DATABASE_URL is required for migration database tests',
+);
   }
 
   const url = new URL(testDatabaseUrl);

@@ -17,7 +17,7 @@ jobs:
             image: postgres:15
             env:
               POSTGRES_USER: globe-trotter
-              POSTGRES_PASSWORD: globe123
+              POSTGRES_PASSWORD: ${{ secrets.TEST_DB_PASSWORD }}
               POSTGRES_DB: globe_trotter_test
             ports:
               - 5432:5432
@@ -43,7 +43,15 @@ jobs:
             cache: pnpm 
 
         - name: Install dependancies
-          run: pnpm install --frozen-lockfile    
+          run: pnpm install --frozen-lockfile
+
+        - name: Create migration test database
+          run: |
+            PGPASSWORD=${{ secrets.TEST_DB_PASSWORD }} psql \
+              -h localhost \
+              -U globe-trotter \
+              -d postgres \
+              -c "CREATE DATABASE globe_trotter_migration_test;"
 
         - name: Build
           run: pnpm build  
@@ -55,4 +63,5 @@ jobs:
           run: pnpm test
           env:
             NODE_ENV: test
-            TEST_DATABASE_URL: postgres://globe-trotter:globe123@localhost:5432/globe_trotter_test
+            TEST_DATABASE_URL: postgres://globe-trotter:${{ secrets.TEST_DB_PASSWORD }}@localhost:5432/globe_trotter_test
+            MIGRATION_TEST_DATABASE_URL: postgres://globe-trotter:${{ secrets.TEST_DB_PASSWORD }}@localhost:5432/globe_trotter_migration_test
