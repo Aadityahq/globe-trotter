@@ -4,10 +4,11 @@ import { drizzle } from "drizzle-orm/node-postgres";
 
 import * as schema from "./schema";
 
-const databaseUrl =
-  process.env.NODE_ENV === 'test'
-    ? process.env.TEST_DATABASE_URL
-    : process.env.DATABASE_URL;
+const isTest = process.env.NODE_ENV === 'test';
+
+const databaseUrl = isTest
+  ? process.env.TEST_DATABASE_URL
+  : process.env.DATABASE_URL;
 
 const betterAuthSecret = process.env.BETTER_AUTH_SECRET;
 const betterAuthUrl = process.env.BETTER_AUTH_URL;
@@ -16,8 +17,8 @@ const googleClientSecret = process.env.GOOGLE_CLIENT_SECRET;
 
 if (!databaseUrl) {
   throw new Error(
-    process.env.NODE_ENV === 'test'
-      ? 'TEST_DATABASE_URL environment variable is not set'
+    isTest
+      ? 'TEST_DATABASE_URL is required when NODE_ENV=test'
       : 'DATABASE_URL environment variable is not set',
   );
 }

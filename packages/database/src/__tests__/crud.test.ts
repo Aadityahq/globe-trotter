@@ -4,9 +4,13 @@ import { db, closeDatabase } from '../client';
 import { users, modules } from '../schema';
 
 const runMigrations = () => {
-  execSync('NODE_ENV=test pnpm exec drizzle-kit migrate', {
+  execSync('pnpm exec drizzle-kit migrate', {
     cwd: process.cwd(),
     stdio: 'inherit',
+    env: {
+      ...process.env,
+      DATABASE_URL: process.env.TEST_DATABASE_URL,
+    },
   });
 };
 
