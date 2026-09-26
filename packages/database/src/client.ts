@@ -23,24 +23,26 @@ if (!databaseUrl) {
   );
 }
 
-if (!betterAuthSecret) {
-  throw new Error("BETTER_AUTH_SECRET environment variable is not set");
-}
+if (!isTest) {
+  if (!betterAuthSecret) {
+    throw new Error("BETTER_AUTH_SECRET environment variable is not set");
+  }
 
-if (!betterAuthUrl) {
-  throw new Error("BETTER_AUTH_URL environment variable is not set");
-}
+  if (!betterAuthUrl) {
+    throw new Error("BETTER_AUTH_URL environment variable is not set");
+  }
 
-if (googleClientId && !googleClientSecret) {
-  throw new Error(
-    "GOOGLE_CLIENT_SECRET environment variable is required when GOOGLE_CLIENT_ID is set",
-  );
-}
+  if (googleClientId && !googleClientSecret) {
+    throw new Error(
+      "GOOGLE_CLIENT_SECRET environment variable is required when GOOGLE_CLIENT_ID is set",
+    );
+  }
 
-if (googleClientSecret && !googleClientId) {
-  throw new Error(
-    "GOOGLE_CLIENT_ID environment variable is required when GOOGLE_CLIENT_SECRET is set",
-  );
+  if (googleClientSecret && !googleClientId) {
+    throw new Error(
+      "GOOGLE_CLIENT_ID environment variable is required when GOOGLE_CLIENT_SECRET is set",
+    );
+  }
 }
 
 try {
