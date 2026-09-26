@@ -1,6 +1,8 @@
 import { execSync } from 'node:child_process';
 import { Client } from 'pg';
 
+let migrationSucceeded = false;
+
 const runMigrations = () => {
   execSync('pnpm exec drizzle-kit migrate', {
     cwd: process.cwd(),
@@ -21,6 +23,7 @@ beforeAll(async () => {
 
   try {
     await client.connect();
+    migrationSucceeded = true;
   } catch (error) {
     throw new Error(
       `Failed to connect to the test database: ${
@@ -55,6 +58,11 @@ it('should apply all database migrations', async () => {
 });
 
 afterAll(async () => {
+  if (!migrationSucceeded) {
+    await client.end().catch(() => {});
+    return;
+  }
+  
   const testDatabaseUrl = process.env.MIGRATION_TEST_DATABASE_URL;
 
   if (!testDatabaseUrl) {
@@ -66,7 +74,7 @@ afterAll(async () => {
   const url = new URL(testDatabaseUrl);
   const dbName = url.pathname.replace(/^\//, '');
 
-  if (!dbName.includes('test')) {
+  if (dbName !== 'globe_trotter_migration_test') {
     throw new Error(
       `I refuse to run a destructive clean-up against a non-test database! DB name: ${dbName}`,
     );
