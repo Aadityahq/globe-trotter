@@ -72,6 +72,13 @@ afterAll(async () => {
   }
 
   const url = new URL(testDatabaseUrl);
+
+  if (url.hostname !== 'localhost' && url.hostname !== '127.0.0.1') {
+    throw new Error(
+      `I refuse to run destructive clean-up against a non-local host! Host: ${url.hostname}`,
+    );
+  }
+
   const dbName = url.pathname.replace(/^\//, '');
 
   if (dbName !== 'globe_trotter_migration_test') {
