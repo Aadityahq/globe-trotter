@@ -17,7 +17,7 @@ jobs:
             image: postgres:16
             env:
               POSTGRES_USER: globe-trotter
-              POSTGRES_PASSWORD: globe123
+              POSTGRES_PASSWORD: globetrotter123
               POSTGRES_DB: globe_trotter_test
             ports:
               - 5432:5432
@@ -47,7 +47,7 @@ jobs:
 
         - name: Create migration test database
           run: |
-            PGPASSWORD=globe123 psql \
+            PGPASSWORD=globetrotter123 psql \
               -h localhost \
               -U globe-trotter \
               -d postgres \
@@ -63,5 +63,5 @@ jobs:
           run: pnpm test
           env:
             NODE_ENV: test
-            TEST_DATABASE_URL: postgres://globe-trotter:globe123@localhost:5432/globe_trotter_test
-            MIGRATION_TEST_DATABASE_URL: postgres://globe-trotter:globe123@localhost:5432/globe_trotter_migration_test
+            TEST_DATABASE_URL: postgres://globe-trotter:globetrotter123@localhost:5432/globe_trotter_test
+            MIGRATION_TEST_DATABASE_URL: postgres://globe-trotter:globetrotter123@localhost:5432/globe_trotter_migration_test
