@@ -7,21 +7,47 @@ if (!secret) {
   throw new Error("BETTER_AUTH_SECRET environment variable is required. The value can be generated using the bash cmd 'openssl rand -base64 32'.");
 };
 
-const url = process.env.BETTER_AUTH_URL ?? "http://localhost:3000";
+const url = process.env.BETTER_AUTH_URL;
 if (!url) {
-  throw new Error("BETTER_AUTH_URL environment variable is required. The value can be generated using the bash cmd 'openssl rand -base64 32'.");
-};
+  throw new Error("BETTER_AUTH_URL environment variable is required.");
+}
 
 export const auth = betterAuth({
   secret,
+  baseURL: url,
+
   database: drizzleAdapter(db, {
     provider: "pg",
   }),
+
+  session: {
+    expiresIn: 60 * 60 * 24 * 7, // 7 days
+    updateAge: 60 * 60 * 24, // Refresh after 1 day
+  },
+
+  advanced: {
+    defaultCookieAttributes: {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "lax",
+    },
+  },
+
+  emailAndPassword: {
+    enabled: true,
+    requireEmailVerification: true,
+    autoSignIn: false,
+  },
+
+  emailVerification: {
+    sendOnSignUp: true,
+  },
+
   user: {
     additionalFields: {
       role: { type: "string", defaultValue: "learner", input: false },
     },
   },
-  // Can add app URL here once deployed
-  trustedOrigins: ["http://localhost:3000"]
+
+  trustedOrigins: ["http://localhost:3000"],
 });
