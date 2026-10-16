@@ -12,6 +12,11 @@ if (!url) {
   throw new Error("BETTER_AUTH_URL environment variable is required.");
 }
 
+const webURL = process.env.WEB_URL;
+if (!webURL) {
+  throw new Error("WEB_URL environment variable is required.");
+}
+
 export const auth = betterAuth({
   secret,
   baseURL: url,
@@ -49,5 +54,5 @@ export const auth = betterAuth({
     },
   },
 
-  trustedOrigins: ["http://localhost:3000"],
+  trustedOrigins: [webURL],
 });

@@ -2,6 +2,7 @@ import { jest, describe, it, expect } from "@jest/globals";
 
 process.env.BETTER_AUTH_SECRET = "test-secret-for-unit-tests-only";
 process.env.BETTER_AUTH_URL = "http://localhost:4000";
+process.env.WEB_URL = "http://localhost:3000";
 
 jest.mock("@repo/database", () => ({
   db: { __mock: true },

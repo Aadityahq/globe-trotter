@@ -2,11 +2,16 @@
   "name": "@repo/types",
   "version": "0.0.0",
   "private": true,
-  "types": "./src/index.ts",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
   "scripts": {
+    "build": "tsc",
+    "dev": "tsc --watch",
     "check-types": "tsc --noEmit"
   },
-  "dependencies": {},
+  "dependencies": {
+    "zod": "^4.6.5"
+  },
   "devDependencies": {
     "@repo/typescript-config": "workspace:*",
     "typescript": "7.0.2"
