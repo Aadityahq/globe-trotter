@@ -1,7 +1,7 @@
 import { Module } from "@nestjs/common";
 import { AuthModule as BetterAuthModule } from "@thallesp/nestjs-better-auth";
-import { EmailModule } from "src/email/email.module";
-import { EmailService } from "src/email/email.service";
+import { EmailModule } from "../email/email.module";
+import { EmailService } from "../email/email.service";
 import { createAuth } from "./auth";
 
 @Module({

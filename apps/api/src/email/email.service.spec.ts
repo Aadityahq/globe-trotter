@@ -4,6 +4,7 @@ import { ConfigService } from "@nestjs/config";
 import { EmailService } from "./email.service"
 import { Test, TestingModule } from "@nestjs/testing";
 import { createTransport } from "nodemailer";
+import renderPasswordResetEmail from "./emailTemplates/renderPasswordResetEmail";
 
 const URLOrigin = "http://localhost:4000";
 
@@ -54,6 +55,20 @@ describe("EmailService", () => {
       const logSpy = jest.spyOn((service as any).logger, "log").mockImplementation();
       await service.sendVerificationEmail("test1@example.dev", URLOrigin + "/verify");
       expect(logSpy).toHaveBeenCalled();
+    });
+
+    it("logs the password reset email instead of sending it", async () => {
+      const logSpy = jest.spyOn((service as any).logger, "log").mockImplementation();
+      await expect(
+        service.sendPasswordResetEmail("test1@example.dev", URLOrigin + "/api/auth/reset-password/token")
+      ).resolves.toBeUndefined();
+      expect(logSpy).toHaveBeenCalledWith(expect.stringContaining("Reset your password"));
+    });
+
+    it("rejects a password reset URL with an unexpected origin", async () => {
+      await expect(
+        service.sendPasswordResetEmail("test1@example.dev", "https://evil.example/api/auth/reset-password/token")
+      ).rejects.toThrow("Password reset URL does not match expected origin");
     });
   });
 
@@ -114,5 +129,42 @@ describe("EmailService", () => {
         secure: false,
       })
     });
+
+    it("sends the password reset email via nodemailer", async () => {
+      const url = URLOrigin + "/api/auth/reset-password/test-token?callbackURL=";
+      await service.sendPasswordResetEmail("test1@example.dev", url);
+
+      expect(mockSendMail).toHaveBeenCalledTimes(1);
+      expect(mockSendMail).toHaveBeenCalledWith(
+        expect.objectContaining({
+          from: "noreply@localhost",
+          to: "test1@example.dev",
+          subject: "Reset your password",
+          text: expect.stringContaining(url),
+          html: expect.stringContaining(url),
+        })
+      );
+    });
+  });
+});
+
+describe("renderPasswordResetEmail", () => {
+  it.each(["javascript:alert(1)", "data:text/html,x", "//evil.example/reset"])(
+    "rejects a non-http(s) URL: %s",
+    (url) => {
+      expect(() => renderPasswordResetEmail(url)).toThrow("Password reset URL must use http or https.");
+    },
+  );
+
+  it("renders an http(s) URL into the email", () => {
+    const url = URLOrigin + "/api/auth/reset-password/token";
+    expect(renderPasswordResetEmail(url)).toContain(`href="${url}"`);
+  });
+
+  it("HTML-escapes the URL so it cannot break out of the href attribute", () => {
+    const html = renderPasswordResetEmail(URLOrigin + '/reset"><script>alert(1)</script>');
+
+    expect(html).not.toContain("<script>");
+    expect(html).toContain(`href="${URLOrigin}/reset&quot;&gt;&lt;script&gt;alert(1)&lt;/script&gt;"`);
   });
 });

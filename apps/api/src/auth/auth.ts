@@ -3,7 +3,7 @@ import { drizzleAdapter } from "@better-auth/drizzle-adapter";
 import { db } from "@repo/database";
 import { APIError, createAuthMiddleware } from "better-auth/api";
 import { passwordSchema } from "@repo/types";
-import { EmailService } from "src/email/email.service";
+import { EmailService } from "../email/email.service";
 import { Logger } from "@nestjs/common";
 
 export type Auth = ReturnType<typeof createAuth>;
@@ -42,7 +42,8 @@ export function createAuth(emailService: EmailService) {
       before: createAuthMiddleware(async (ctx) => {
         if (ctx.path !== "/sign-up/email" && ctx.path !== "/reset-password") return;
 
-        const password = ctx.body?.password;
+        //? Reset password sends the new password as "newPassword" rather than "password"
+        const password = ctx.path === "/reset-password" ? ctx.body?.newPassword : ctx.body?.password;
         if (typeof password !== "string") return;
 
         const result = passwordSchema.safeParse(password);
@@ -60,6 +61,15 @@ export function createAuth(emailService: EmailService) {
         //? Do not await - this is to prevent timing attacks
         void emailService.sendDuplicateSignUpNotice(user.email)
           .catch(err => logger.error('[auth] Unexpected error sending duplicate sign-up notice:', err));
+      },
+      resetPasswordTokenExpiresIn: 60 * 60, // 1 hour (in seconds)
+      revokeSessionsOnPasswordReset: true,
+      sendResetPassword: async ({ user, url }) => {
+        //? Do not await - this is to prevent timing attacks
+        void emailService.sendPasswordResetEmail(user.email, url)
+          .catch(err => logger.error(
+            `Failed to send password reset email to ${user.email}: ${err instanceof Error ? err.message : String(err)}`
+          ));
       },
     },
     emailVerification: {

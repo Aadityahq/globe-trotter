@@ -5,6 +5,7 @@ import { Resend } from "resend";
 import { createTransport, type Transporter } from "nodemailer";
 import renderVerificationEmail from "./emailTemplates/renderVerificationEmail";
 import renderDuplicateNoticeEmail from "./emailTemplates/renderDupeNoticeEmail";
+import renderPasswordResetEmail from "./emailTemplates/renderPasswordResetEmail";
 import escapeHtml from "escape-html";
 
 // "from" not included since it is decided by env variable only
@@ -89,6 +90,29 @@ export class EmailService {
       subject: "Verify your email address",
       html: renderVerificationEmail(safeUrl),
       text: `Click the link to verify your email: ${safeUrl}`,
+    });
+  }
+
+  async sendPasswordResetEmail(to: string, url: string): Promise<void> {
+    const expected = new URL(this.betterAuthUrl).origin;
+    const actual = new URL(url).origin;
+
+    if (actual !== expected) {
+      throw new Error("Password reset URL does not match expected origin");
+    }
+
+    const parsed = new URL(url);
+    if (!["http:", "https:"].includes(parsed.protocol)) {
+      throw new Error("Password reset URL must use http or https.");
+    }
+
+    const safeUrl = escapeHtml(url) as string;
+
+    await this.send({
+      to,
+      subject: "Reset your password",
+      html: renderPasswordResetEmail(url),
+      text: `Click the link to reset your password (expires in 1 hour): ${safeUrl}`,
     });
   }
 
