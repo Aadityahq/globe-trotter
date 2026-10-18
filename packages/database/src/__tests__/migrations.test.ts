@@ -1,29 +1,16 @@
-import { execSync } from 'node:child_process';
 import { Client } from 'pg';
+import { drizzle } from 'drizzle-orm/node-postgres';
+import { migrate } from 'drizzle-orm/node-postgres/migrator';
 
 let migrationSucceeded = false;
-
-const runMigrations = () => {
-  execSync('pnpm exec drizzle-kit migrate', {
-    cwd: process.cwd(),
-    stdio: 'inherit',
-    env: {
-      ...process.env,
-      DATABASE_URL: process.env.MIGRATION_TEST_DATABASE_URL,
-    },
-  });
-};
 
 const client = new Client({
   connectionString: process.env.MIGRATION_TEST_DATABASE_URL,
 });
 
 beforeAll(async () => {
-  runMigrations();
-
   try {
     await client.connect();
-    migrationSucceeded = true;
   } catch (error) {
     throw new Error(
       `Failed to connect to the test database: ${
@@ -31,6 +18,11 @@ beforeAll(async () => {
       }`,
     );
   }
+
+  const db = drizzle(client);
+  await migrate(db, { migrationsFolder: './migrations' });
+
+  migrationSucceeded = true;
 });
 
 it('should apply all database migrations', async () => {

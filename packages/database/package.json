@@ -11,6 +11,7 @@
     "db:seed": "tsx src/seed.ts",
     "db:health": "tsx src/health.ts",
     "build": "tsc",
+    "dev": "tsc --watch",
     "check-types": "tsc --noEmit",
     "test": "NODE_ENV=test jest --runInBand",
     "test:watch": "NODE_ENV=test jest --watch --runInBand",

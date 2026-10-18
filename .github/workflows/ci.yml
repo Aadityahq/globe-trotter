@@ -1,9 +1,9 @@
 name: CI
 
-on: 
+on:
   pull_request:
     branches:
-        - main
+      - main
   push:
     branches:
         - main 
@@ -27,46 +27,46 @@ jobs:
               --health-timeout 5s
               --health-retries 5
 
-        steps:
-        - name: Checkout repository
-          uses: actions/checkout@v4
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-        - name: Setup pnpm
-          uses: pnpm/action-setup@v6
-          with: 
-            version: 11.22.0
-          
-        - name: Setup Node.js
-          uses: actions/setup-node@v7
-          with: 
-            node-version: 24.9.0
-            cache: pnpm 
-
-        - name: Install dependencies
-          run: pnpm install --frozen-lockfile
-
-        - name: Create migration test database
-          run: |
-            PGPASSWORD=globetrotter123 psql \
-              -h localhost \
-              -U globe-trotter \
-              -d postgres \
-              -c "CREATE DATABASE globe_trotter_migration_test;"
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v6
+        with: 
+          version: 11.22.0
         
-        - name: Build types
-          run: pnpm --filter types build
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with: 
+          node-version: 24.9.0
+          cache: pnpm 
 
-        - name: Build
-          run: pnpm build  
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
-        - name: Lint
-          run: pnpm lint  
+      - name: Create migration test database
+        run: |
+          PGPASSWORD=globetrotter123 psql \
+            -h localhost \
+            -U globe-trotter \
+            -d postgres \
+            -c "CREATE DATABASE globe_trotter_migration_test;"
+      
+      - name: Build types
+        run: pnpm --filter types build
 
-        - name: Test
-          run: pnpm test
-          env:
-            BETTER_AUTH_URL: http://localhost:4000
-            EMAIL_PROVIDER: stub
-            NODE_ENV: test
-            TEST_DATABASE_URL: postgres://globe-trotter:globetrotter123@localhost:5432/globe_trotter_test
-            MIGRATION_TEST_DATABASE_URL: postgres://globe-trotter:globetrotter123@localhost:5432/globe_trotter_migration_test
+      - name: Build
+        run: pnpm build  
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Test
+        run: pnpm test
+        env:
+          BETTER_AUTH_URL: http://localhost:4000
+          EMAIL_PROVIDER: stub
+          NODE_ENV: test
+          TEST_DATABASE_URL: postgres://globe-trotter:globetrotter123@localhost:5432/globe_trotter_test
+          MIGRATION_TEST_DATABASE_URL: postgres://globe-trotter:globetrotter123@localhost:5432/globe_trotter_migration_test
