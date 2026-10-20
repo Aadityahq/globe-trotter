@@ -1,5 +1,5 @@
-export { modules } from './modules';
-export { tutorials } from './tutorials';
-export { labs } from './labs';
-export { userProgress, userProgressStatusEnum } from './user-progress';
-export { user, session, account, verification } from './auth-schema';
+export * from './modules';
+export * from './tutorials';
+export * from './labs';
+export * from './user-progress';
+export * from './auth-schema';
