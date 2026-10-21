@@ -178,7 +178,8 @@ describe('Authentication and role based access (e2e)', () => {
       clearedCookies?.some(
         (cookie) =>
           /session_token/i.test(cookie) &&
-          (/max-age=0/i.test(cookie) || /expires=/i.test(cookie)),
+          (/max-age=0/i.test(cookie) ||
+          /expires=Thu,\s*01\s*Jan\s*1970/i.test(cookie)),
       ),
     ).toBe(true);
 
@@ -196,18 +197,6 @@ describe('Authentication and role based access (e2e)', () => {
   });
 
   it('allows a user to revoke all their sessions', async () => {
-    const firstAgent = request.agent(app.getHttpServer() as App);
-    const secondAgent = request.agent(app.getHttpServer() as App);
-
-    for (const agent of [firstAgent, secondAgent]) {
-      const signIn = await agent
-        .post('/api/auth/sign-in/email')
-        .set('Origin', 'http://localhost:3000')
-        .send({ email: learnerEmail, password });
-
-      expect(signIn.status).toBeLessThan(400);
-    }
-
     const users = await db
       .select({ id: userTable.id })
       .from(userTable)
@@ -221,6 +210,28 @@ describe('Authentication and role based access (e2e)', () => {
     }
 
     const userId = userRecord.id;
+
+    /**
+     * Scoped cleanup: sessions from other tests (including the shared
+     * beforeAll agents) would otherwise pollute the count below.
+     * Do NOT move this into a global beforeEach - that would also wipe
+     * learnerAgent and authorAgent sessions used by role tests.
+     */
+    await db
+      .delete(sessionTable)
+      .where(eq(sessionTable.userId, userId));
+
+    const firstAgent = request.agent(app.getHttpServer() as App);
+    const secondAgent = request.agent(app.getHttpServer() as App);
+
+    for (const agent of [firstAgent, secondAgent]) {
+      const signIn = await agent
+        .post('/api/auth/sign-in/email')
+        .set('Origin', 'http://localhost:3000')
+        .send({ email: learnerEmail, password });
+
+      expect(signIn.status).toBeLessThan(400);
+    }
 
     const revoke = await firstAgent
       .post('/api/auth/revoke-sessions')
